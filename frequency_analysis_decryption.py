@@ -11,6 +11,7 @@ input_text = input_text.read()
 input_text = input_text.lower()
 frequency_text = frequency_text.read()
 frequency_text = frequency_text.lower()
+
 import random
 def random_alph(alph):
     cypher_alph=[]
@@ -64,7 +65,6 @@ def normalize_prob(prob):
 
 def best_guess(prob):
     guess={}
-    
     for p in prob:
         best = 0.
         for c in prob[p]:
@@ -77,7 +77,7 @@ def best_guess(prob):
     inverse_guess = {}
     for g in guess:
         inverse_guess[guess[g]]=g
-    return inverse_guess,dist/26
+    return inverse_guess,guess,dist/26
 
 def decrypt(cypher_text,guess):
     decryption = ''
@@ -113,7 +113,7 @@ def find_pairs(text,alph,num=2):
     end = normalize_pairs(end)
     other = normalize_pairs(other)
     #print double
-    return [double,start,end]
+    return [double,start,end,other]
 
 def normalize_pairs(pairs):
     pairs = sorted(pairs,key=lambda pairs: pairs[1],reverse=True)
@@ -125,8 +125,9 @@ def pairs_update_prob(base_pairs,cypher_pairs,prob):
         for q in range(min([len(base_pairs),len(cypher_pairs)])):
             for r in range(len(cypher_pairs[q][0])):
                 if base_pairs[p][0][r] in prob and cypher_pairs[q][0][r] in prob[base_pairs[p][0][r]]:
-                    prob[base_pairs[p][0][r]][cypher_pairs[q][0][r]] += .09/(1+abs(p-q))
-    return normalize_prob(prob)
+                    prob[base_pairs[p][0][r]][cypher_pairs[q][0][r]] += .1/(.1+abs(p-q))
+                    normalize_prob(prob)
+    return prob
 
 def all_pairs_update(base_pairs,cypher_pairs,prob):
     for p in range(len(base_pairs)):
@@ -137,7 +138,7 @@ cypher_alph = ['V', 'N', 'T', 'G', 'P', 'H', 'Z', 'K', 'J', 'W', 'S', 'I', 'U', 
 cypher_text = encrypt(alph,cypher_alph,input_text)
 
 text_freq = frequency(alph,frequency_text)
-#input_freq = frequency(alph,input_text)
+input_freq = frequency(alph,input_text)
 cypher_freq = frequency(cypher_alph,cypher_text)
 
 base_pairs = find_pairs(frequency_text,alph)
@@ -158,7 +159,6 @@ guess = best_guess(prob)
 #print decrypt(cypher_text,guess[0])
 
 all_pairs_update(base_pairs,cypher_pairs,prob)
-print prob['s']
 guess = best_guess(prob)
 #print prob['e']['P']
 #print guess,len(guess[0])
@@ -178,10 +178,23 @@ decrypted_text = decrypt(cypher_text,guess[0])
 print decrypted_text
 decrypted_freq = frequency(alph,decrypted_text)
 input_pairs = find_pairs(input_text,alph)
+input_pairs.append(input_freq)
 decrypted_pairs = find_pairs(decrypted_text,alph)
-d =3
+decrypted_pairs.append(decrypted_freq)
+d =0
 #for p in range(min(len(input_pairs[d]),len(decrypted_pairs[d]),len(base_pairs[d]))):
 #    print 'input',input_pairs[d][p],'decryp',decrypted_pairs[d][p],'base',base_pairs[d][p]
+distance = []
+for p in range(min(len(input_pairs[d]),len(decrypted_pairs[d]),len(base_pairs[d]))):
+    found = False
+    for a in range(min(len(input_pairs[d]),len(decrypted_pairs[d]),len(base_pairs[d]))):
+        if decrypted_pairs[d][p][0] == base_pairs[d][a][0]:
+            distance.append(abs(p-a))
+            found = True
+    if not found:
+        distance.append(100)
+for p in range(min(len(input_pairs[d]),len(decrypted_pairs[d]),len(base_pairs[d]),len(distance))):
+    print 'decryp',decrypted_pairs[d][p],'base',base_pairs[d][p],'distance',distance[p]
 #for p in range(len(cypher_freq)):
 #    print text_freq[p],decrypted_freq[p]
                   
