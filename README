@@ -1,1 +1,19 @@
 This program takes a piece of text that has been encrypted with a random alphabet and a large file that is the same language.  It then does a frequency analysis of the letters and character pairs.  The character pairs are separated into groups of key types.  Certain character pairings are extra important for decryption the ones I identified were double letters, starting letters and ending letters.  For example in this readme file there are several words that start with 'c' but none that end in 'c'.
+
+The program starts with a list of all the letters in the alphabet each with a sub list of all the letters in the cipher alphabet.  All of the letters in the cipher alphabet are assigned a probability of being correct.  After the program analyzes the frequency of each letter and letter grouping in the cipher text it compares it to a baseline text and updates the probabilities.  It then uses it's best guess and creates a decrypted document.  It then runs though and creates a set of lists for letters and letter groups in both the base text and the decrypted text and the number of times each pairing occurs.  It then finds the "distance" between the two sets of lists by comparing the relative position of each list element.  For example if 'e' is the 1st letter in the decrypted text and the 4th in the base text the distance is 3.
+
+I then tried to update the probabilities using the distance data.  Then creating a new decrypted text updating the distances again and rechecking the distance.  This would sort of work.  It would fix some problems and create more problems.  I went around in circles trying to get a better method of updating probabilities.  After doing a bit of checking I realized the loop would eventually reach a point were it would get stuck with the wrong answer.  I would get some change at the beginning but then the text would stabilize.  Which would be fine if it was the correct out put but it was rarely any better than the first decryption.
+
+To Do:
+
+Updating probabilities based in distance data didn't create a better result but it was able to tell which outputs were better than others.  My plan for fixing this problem is to create a algorithm that first decrypts the cipher text using the best guess based on the probabilities from the frequency analysis.  It would then calculated the total distance between the base text and the decrypted text.  It would then go on to check the second best guesses for a letter and compare the distance calculations of the two decryptions.
+
+The letters it picked to changed first would be based on the difference between the two most probible cypher letters.  
+For example:
+
+'a' = 'K'.04 or 'D'.039
+'e' = 'P'.08 or 'H'.024
+
+'a' would first get set equal to 'K' and then in the second round of guessing it would be set to 'D'.
+
+This should make it possible to get a correct decryption with a lot less force than a plain brute force method.
