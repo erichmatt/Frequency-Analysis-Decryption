@@ -6,6 +6,7 @@ input_text = open('input.txt','r')
 frequency_text = open('frequency.txt', 'r')
 
 alph =['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+
 cypher_alph = ['V', 'N', 'T', 'G', 'P', 'H', 'Z', 'K', 'J', 'W', 'S', 'I', 'U', 'A', 'Q', 'Y', 'M', 'R', 'L', 'E', 'C', 'O', 'F', 'B', 'D', 'X']
 
 correct_guess= {}
@@ -36,6 +37,8 @@ def encrypt(alph,cypher_alph,input_text):
 
 cypher_text = encrypt(alph,cypher_alph,input_text)
 
+
+
 ## Start trying to decrypt the document
 
 # functions to setup a base probability and to normalize the probabilites after an update
@@ -56,6 +59,9 @@ def normalize_prob(prob):
         for d in prob[p]:
             prob[p][d] = prob[p][d]/val
     return prob
+def frequency_prob(prob,cypher_freq,base_freq):
+    return prob
+
 ## Make a guess
 def best_guess(prob,guess_alph,cypher_freq,base_freq):
     guess1={}
@@ -101,8 +107,10 @@ def decrypt(cypher_text,guess):
 ## Find the frequency of each letter
 def frequency(alph,text):
     let_freq=[]
+    let_percent = 0.0
     for char in alph:
-        let_freq.append([char,text.count(char)])
+        let_percent = float(text.count(char))/float(len(text))
+        let_freq.append([char,let_percent])
     let_freq = sorted(let_freq,key=lambda let_freq: let_freq[1],reverse=True)
     return let_freq
 
@@ -149,20 +157,7 @@ def normalize_pairs(pairs):
     pairs = sorted(pairs,key=lambda pairs: pairs[1],reverse=True)
     pairs = pairs[:50]
     return pairs
-# calculate the distance between the decrypted text and the base text
-def distance(base_pairs,decrypted_pairs):
-    distance_list = []
-    for d in range(len(base_pairs)-0):
-        distance_tmp = []
-        for p in range(min(len(decrypted_pairs[d]),len(base_pairs[d]))):
-            found = False
-                if decrypted_pairs[d][p][0] == base_pairs[d][a][0]:
-                    distance_tmp.append([decrypted_pairs[d][p][0], base_pairs[d][a][0],abs(p-a)])
-                    found = True
-            if not found:
-                distance_tmp.append([decrypted_pairs[d][p][0], base_pairs[d][p][0],1000])
-        distance_list.append(distance_tmp)
-    return distance_list
+
 
 #update the probabilites using the frequency of letters and letter groups
 def pairs_update_prob(base_pairs,cypher_pairs,prob):
@@ -173,79 +168,45 @@ def pairs_update_prob(base_pairs,cypher_pairs,prob):
                     prob[base_pairs[p][0][r]][cypher_pairs[q][0][r]] += (.1/(1+abs(p-q)))**2
                     prob = normalize_prob(prob)
     return prob
+
 #send the groups to be updated
 def all_pairs_update(base_pairs,cypher_pairs,prob):
     for p in range(len(base_pairs)):
         prob = pairs_update_prob(base_pairs[p],cypher_pairs[p],prob)
     return prob
 
-#Update the probability based on the distance.  This function doesn't work very well
-def distance_update(distance_list,guess,prob):
-    increased = []
-    decreased = []
-    for p in range(len(distance_list)):
-        for d in range(len(distance_list[p])/3):
-            if distance_list[p][d][2] >= 22:
-                for a in range(len(distance_list[p][d][0])):
-                    if distance_list[p][d][0][a] in guess[1] and distance_list[p][d][0][a] not in decreased:
-                        prob[distance_list[p][d][0][a]][guess[1][distance_list[p][d][0][a]]] -= .02
-                        decreased.append(distance_list[p][d][0][a])
-                        prob = normalize_prob(prob)
-            else:
-                for a in range (len(distance_list[p][d][0])):
-                    if distance_list[p][d][0][a] in guess[1] and distance_list[p][d][0][a] not in increased:
-                        prob[distance_list[p][d][0][a]][guess[1][distance_list[p][d][0][a]]] += .031
-                        increased.append(distance_list[p][d][0][a])
-                        prob = normalize_prob(prob)
-    return prob
 
 input_freq = frequency(alph,input_text)
 input_pairs = find_pairs(input_text,alph)
+#print input_pairs
 input_pairs.append(input_freq)
-
+print input_freq
 base_freq = frequency(alph,frequency_text)
-base_pairs = find_pairs(frequency_text,alph)
-base_pairs.append(base_freq)
+#base_freq = frequency(alph,input_text)
+#print base_freq
+#base_pairs = find_pairs(frequency_text,alph)
+#base_pairs.append(base_freq)
 
 cypher_freq = frequency(cypher_alph,cypher_text)
 cypher_pairs = find_pairs(cypher_text,cypher_alph)
-cypher_pairs.append(cypher_freq)
+#print cypher_pairs
+#cypher_pairs.append(cypher_freq)
 prob = start_prob(alph,cypher_alph)
-prob = all_pairs_update(base_pairs,cypher_pairs,prob)
-
+#prob = all_pairs_update(base_pairs,cypher_pairs,prob)
+#print prob
 guess = best_guess(prob,cypher_alph,cypher_freq,base_freq)
-
+print guess
 decrypted_text = decrypt(cypher_text,guess[0])
 
 decrypted_freq = frequency(alph,decrypted_text)
 decrypted_pairs = find_pairs(decrypted_text,alph)
 decrypted_pairs.append(decrypted_freq)
-decryp_distance = distance(base_pairs,decrypted_pairs)
+#decryp_distance = distance(base_pairs,decrypted_pairs)
 
-## loop to keep updating the probability based on the distance (doesn't work)
-for ba in range(2):
-    prob = distance_update(decryp_distance,guess,prob)
-    guess = best_guess(prob,cypher_alph,cypher_freq,base_freq)
-    num_correct= 0
-    for g in guess[0]:
-        if guess[0][g]== correct_guess[g]:
-            num_correct += 1
-    print num_correct,',',ba
-    decrypted_text = decrypt(cypher_text,guess[0])
-    decrypted_freq = frequency(alph,decrypted_text)
-    decrypted_pairs = find_pairs(decrypted_text,alph)
-    decrypted_pairs.append(decrypted_freq)
-    decryp_distance = distance(base_pairs,decrypted_pairs)
-    
-    for d in range(2):
-        prob = all_pairs_update(base_pairs,cypher_pairs,prob)
-        #prob = pairs_update_prob(base_freq, cypher_freq,prob)
+f = open("encrypted.txt","w")
+f.write(cypher_text)
+f.close
 
-guess = best_guess(prob,cypher_alph,cypher_freq,base_freq)
-decrypted_text = decrypt(cypher_text,guess[0])
-print decrypted_text
-num_correct= 0
-for g in guess[0]:
-    if guess[0][g]== correct_guess[g]:
-        num_correct += 1
-print num_correct
+f = open("decrypted.txt","w")
+f.write(decrypted_text)
+f.close
