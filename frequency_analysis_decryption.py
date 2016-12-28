@@ -156,7 +156,6 @@ def distance(base_pairs,decrypted_pairs):
         distance_tmp = []
         for p in range(min(len(decrypted_pairs[d]),len(base_pairs[d]))):
             found = False
-            for a in range(min(len(decrypted_pairs[d]),len(base_pairs[d]))):
                 if decrypted_pairs[d][p][0] == base_pairs[d][a][0]:
                     distance_tmp.append([decrypted_pairs[d][p][0], base_pairs[d][a][0],abs(p-a)])
                     found = True
