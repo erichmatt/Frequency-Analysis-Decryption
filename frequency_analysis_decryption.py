@@ -35,7 +35,7 @@ def encrypt(alph,cypher_alph,input_text):
             cypher_text += a
     return cypher_text
 
-cypher_text = encrypt(alph,cypher_alph,input_text)
+
 
 
 
@@ -175,7 +175,7 @@ def all_pairs_update(base_pairs,cypher_pairs,prob):
         prob = pairs_update_prob(base_pairs[p],cypher_pairs[p],prob)
     return prob
 
-
+cypher_text = encrypt(alph,cypher_alph,input_text)
 input_freq = frequency(alph,input_text)
 input_pairs = find_pairs(input_text,alph)
 #print input_pairs
