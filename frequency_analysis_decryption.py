@@ -59,40 +59,17 @@ def normalize_prob(prob):
         for d in prob[p]:
             prob[p][d] = prob[p][d]/val
     return prob
+## update the probability of each letter based on the frequency that each letter occurs
+
 def frequency_prob(prob,cypher_freq,base_freq):
+    for c in prob:
+        print c,prob[c]
     return prob
 
 ## Make a guess
-def best_guess(prob,guess_alph,cypher_freq,base_freq):
-    guess1={}
-    guess = {}
-    missing = []
-    guessed = []
-    for p in prob:
-        best = 0.
-        for c in prob[p]:
-            if prob[p][c] >= best:
-                best = prob[p][c]
-                guess1[p]=c,prob[p][c]
-    dist=0
-    for g in guess1:
-        guessed.append([g,guess1[g]])
-	## Some letters will have been assigned twice and some not at all we want to pick the most probable ones first
-    guessed = sorted(guessed,key=lambda guessed: guessed[1][1])
-    inverse_guess = {}
-    for g in range(len(guessed)):
-        inverse_guess[guessed[g][1][0]]=guessed[g][0]
-        guess[guessed[g][0]]=guessed[g][1][0]
-	## Check to see what letters are missing
-    for c in cypher_alph:		
-        if c not in inverse_guess:
-            missing.append(c)
-	## Add back in the missing letters using the highest frequency letter than hasn't been used
-    for f in range(len(cypher_freq)):
-        if cypher_freq[f][0] in missing:
-            inverse_guess[cypher_freq[f][0]] =base_freq[f][0]
-
-    return [inverse_guess,guess,dist/26]
+def best_guess(prob,guess_alph):
+   
+    return []
 
 ## Decrypt the text using the best guess
 def decrypt(cypher_text,guess):
@@ -179,28 +156,28 @@ cypher_text = encrypt(alph,cypher_alph,input_text)
 input_freq = frequency(alph,input_text)
 input_pairs = find_pairs(input_text,alph)
 #print input_pairs
-input_pairs.append(input_freq)
-print input_freq
-base_freq = frequency(alph,frequency_text)
-#base_freq = frequency(alph,input_text)
+#input_pairs.append(input_freq)
+#print input_freq
+#base_freq = frequency(alph,frequency_text)
+base_freq = frequency(alph,input_text)
 #print base_freq
 #base_pairs = find_pairs(frequency_text,alph)
 #base_pairs.append(base_freq)
-
 cypher_freq = frequency(cypher_alph,cypher_text)
-cypher_pairs = find_pairs(cypher_text,cypher_alph)
+#cypher_pairs = find_pairs(cypher_text,cypher_alph)
 #print cypher_pairs
 #cypher_pairs.append(cypher_freq)
 prob = start_prob(alph,cypher_alph)
+prob = frequency_prob(prob,cypher_freq,base_freq)
 #prob = all_pairs_update(base_pairs,cypher_pairs,prob)
 #print prob
-guess = best_guess(prob,cypher_alph,cypher_freq,base_freq)
-print guess
-decrypted_text = decrypt(cypher_text,guess[0])
+#guess = best_guess(prob,cypher_alph,cypher_freq,base_freq)
+#print guess
+#decrypted_text = decrypt(cypher_text,guess[0])
 
-decrypted_freq = frequency(alph,decrypted_text)
-decrypted_pairs = find_pairs(decrypted_text,alph)
-decrypted_pairs.append(decrypted_freq)
+#decrypted_freq = frequency(alph,decrypted_text)
+#decrypted_pairs = find_pairs(decrypted_text,alph)
+#decrypted_pairs.append(decrypted_freq)
 #decryp_distance = distance(base_pairs,decrypted_pairs)
 
 f = open("encrypted.txt","w")
